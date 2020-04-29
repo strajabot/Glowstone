@@ -51,12 +51,14 @@ public final class NbtSerialization {
             return null;
         }
         final short[] damage = {0};
-        tag.readShort("Damage", x -> damage[0] = x);
         ItemStack stack = new ItemStack(material[0], count[0], damage[0]);
         // This is slightly different than what tag.readItem would do, since we specify the
         // material separately.
         tag.readCompound("tag",
-            subtag -> stack.setItemMeta(GlowItemFactory.instance().readNbt(material[0], subtag)));
+            subtag -> {
+                subtag.readShort("Damage", x -> damage[0] = x);
+                stack.setItemMeta(GlowItemFactory.instance().readNbt(material[0], subtag));
+        });
         return stack;
     }
 
@@ -75,10 +77,10 @@ public final class NbtSerialization {
             return tag;
         }
         tag.putString("id", ItemIds.getName(stack.getType()));
-        tag.putShort("Damage", stack.getDurability());
         tag.putByte("Count", stack.getAmount());
         tag.putByte("Slot", slot);
         CompoundTag meta = GlowItemFactory.instance().writeNbt(stack.getItemMeta());
+        meta.putShort("Damage", stack.getDurability());
         if (meta != null) {
             tag.putCompound("tag", meta);
         }
